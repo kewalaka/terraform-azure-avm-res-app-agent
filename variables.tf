@@ -9,10 +9,8 @@ variable "name" {
   description = "The name of the this resource."
 
   validation {
-    condition     = can(regex("TODO", var.name))
-    error_message = "The name must be TODO." # TODO remove the example below once complete:
-    #condition     = can(regex("^[a-z0-9]{5,50}$", var.name))
-    #error_message = "The name must be between 5 and 50 characters long and can only contain lowercase letters and numbers."
+    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]{0,48}[a-zA-Z0-9]$", var.name))
+    error_message = "The agent name must be between 2 and 50 characters, start and end with alphanumeric, and only contain alphanumeric characters and hyphens."
   }
 }
 
@@ -23,28 +21,6 @@ variable "resource_group_name" {
 }
 
 # required AVM interfaces
-# remove only if not supported by the resource
-# tflint-ignore: terraform_unused_declarations
-variable "customer_managed_key" {
-  type = object({
-    key_vault_resource_id = string
-    key_name              = string
-    key_version           = optional(string, null)
-    user_assigned_identity = optional(object({
-      resource_id = string
-    }), null)
-  })
-  default     = null
-  description = <<DESCRIPTION
-A map describing customer-managed keys to associate with the resource. This includes the following properties:
-- `key_vault_resource_id` - The resource ID of the Key Vault where the key is stored.
-- `key_name` - The name of the key.
-- `key_version` - (Optional) The version of the key. If not specified, the latest version is used.
-- `user_assigned_identity` - (Optional) An object representing a user-assigned identity with the following properties:
-  - `resource_id` - The resource ID of the user-assigned identity.
-DESCRIPTION
-}
-
 variable "diagnostic_settings" {
   type = map(object({
     name                                     = optional(string, null)
@@ -136,70 +112,6 @@ DESCRIPTION
   nullable    = false
 }
 
-variable "private_endpoints" {
-  type = map(object({
-    name = optional(string, null)
-    role_assignments = optional(map(object({
-      role_definition_id_or_name             = string
-      principal_id                           = string
-      description                            = optional(string, null)
-      skip_service_principal_aad_check       = optional(bool, false)
-      condition                              = optional(string, null)
-      condition_version                      = optional(string, null)
-      delegated_managed_identity_resource_id = optional(string, null)
-    })), {})
-    lock = optional(object({
-      kind = string
-      name = optional(string, null)
-    }), null)
-    tags                                    = optional(map(string), null)
-    subnet_resource_id                      = string
-    private_dns_zone_group_name             = optional(string, "default")
-    private_dns_zone_resource_ids           = optional(set(string), [])
-    application_security_group_associations = optional(map(string), {})
-    private_service_connection_name         = optional(string, null)
-    network_interface_name                  = optional(string, null)
-    location                                = optional(string, null)
-    resource_group_name                     = optional(string, null)
-    ip_configurations = optional(map(object({
-      name               = string
-      private_ip_address = string
-    })), {})
-  }))
-  default     = {}
-  description = <<DESCRIPTION
-A map of private endpoints to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-
-- `name` - (Optional) The name of the private endpoint. One will be generated if not set.
-- `role_assignments` - (Optional) A map of role assignments to create on the private endpoint. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time. See `var.role_assignments` for more information.
-- `lock` - (Optional) The lock level to apply to the private endpoint. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`.
-- `tags` - (Optional) A mapping of tags to assign to the private endpoint.
-- `subnet_resource_id` - The resource ID of the subnet to deploy the private endpoint in.
-- `private_dns_zone_group_name` - (Optional) The name of the private DNS zone group. One will be generated if not set.
-- `private_dns_zone_resource_ids` - (Optional) A set of resource IDs of private DNS zones to associate with the private endpoint. If not set, no zone groups will be created and the private endpoint will not be associated with any private DNS zones. DNS records must be managed external to this module.
-- `application_security_group_resource_ids` - (Optional) A map of resource IDs of application security groups to associate with the private endpoint. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-- `private_service_connection_name` - (Optional) The name of the private service connection. One will be generated if not set.
-- `network_interface_name` - (Optional) The name of the network interface. One will be generated if not set.
-- `location` - (Optional) The Azure location where the resources will be deployed. Defaults to the location of the resource group.
-- `resource_group_name` - (Optional) The resource group where the resources will be deployed. Defaults to the resource group of this resource.
-- `ip_configurations` - (Optional) A map of IP configurations to create on the private endpoint. If not specified the platform will create one. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-  - `name` - The name of the IP configuration.
-  - `private_ip_address` - The private IP address of the IP configuration.
-DESCRIPTION
-  nullable    = false
-}
-
-# This variable is used to determine if the private_dns_zone_group block should be included,
-# or if it is to be managed externally, e.g. using Azure Policy.
-# https://github.com/Azure/terraform-azurerm-avm-res-keyvault-vault/issues/32
-# Alternatively you can use AzAPI, which does not have this issue.
-variable "private_endpoints_manage_dns_zone_group" {
-  type        = bool
-  default     = true
-  description = "Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
-  nullable    = false
-}
-
 variable "role_assignments" {
   type = map(object({
     role_definition_id_or_name             = string
@@ -234,4 +146,162 @@ variable "tags" {
   type        = map(string)
   default     = null
   description = "(Optional) Tags of the resource."
+}
+
+# SRE Agent specific variables
+variable "action_configuration" {
+  description = <<DESCRIPTION
+Configuration for action
+
+- `access_level` - The access level of the action
+- `identity` - The identity used by the action
+- `mode` - The mode of the action
+
+DESCRIPTION
+  type = object({
+    access_level = optional(any)
+    identity     = optional(string)
+    mode         = optional(any)
+  })
+  default = null
+}
+
+variable "agent_identity" {
+  description = <<DESCRIPTION
+Agent identity configuration for accessing resources
+
+- `initial_sponsor_group_id` - Initial sponsor group ID (required for agent identity)
+
+DESCRIPTION
+  type = object({
+    initial_sponsor_group_id = string
+  })
+  default = null
+}
+
+variable "agent_space_id" {
+  description = <<DESCRIPTION
+The agent space ID referenced by the agent
+DESCRIPTION
+  type        = string
+  default     = null
+}
+
+variable "default_model" {
+  description = <<DESCRIPTION
+Default AI model configuration for the agent
+
+- `name` - Model name (e.g., gpt-5, claude-opus-4-5, claude-sonnet-4-5)
+- `provider` - AI provider name (e.g., MicrosoftFoundry, Anthropic)
+
+DESCRIPTION
+  type = object({
+    name     = optional(string)
+    provider = optional(string)
+  })
+  default = null
+}
+
+variable "incident_management_configuration" {
+  description = <<DESCRIPTION
+Incident management configurations
+
+- `connection_key` - The key for the connection
+- `connection_name` - The name of the connection
+- `connection_url` - The URL of the connection
+- `obo_user` - The user for the connection
+- `type` - The type of incident management system
+
+DESCRIPTION
+  type = object({
+    connection_key  = optional(string)
+    connection_name = optional(string)
+    connection_url  = optional(string)
+    obo_user        = optional(string)
+    type            = optional(string)
+  })
+  default = null
+}
+
+variable "knowledge_graph_configuration" {
+  description = <<DESCRIPTION
+Knowledge graph configuration for agent
+
+- `identity` - The identity used to access the knowledge graph
+- `managed_resources` - The list of resources managed by agent
+
+DESCRIPTION
+  type = object({
+    identity          = optional(string)
+    managed_resources = optional(list(string))
+  })
+  default = null
+}
+
+variable "log_configuration" {
+  description = <<DESCRIPTION
+Log configurations
+
+- `application_insights_configuration` - Application Insights Configuration
+  - `app_id` - The Application ID for the Application Insights resource
+  - `connection_string` - The connection string for the Application Insights resource
+
+DESCRIPTION
+  type = object({
+    application_insights_configuration = optional(object({
+      app_id            = optional(string)
+      connection_string = optional(string)
+    }))
+  })
+  default = null
+}
+
+variable "upgrade_channel" {
+  description = <<DESCRIPTION
+The upgrade channel of the agent
+DESCRIPTION
+  type        = any
+  default     = null
+}
+
+variable "connection_key" {
+  description = <<DESCRIPTION
+The key for the connection
+DESCRIPTION
+  type        = string
+  default     = null
+  ephemeral   = true
+}
+
+variable "connection_string" {
+  description = <<DESCRIPTION
+The connection string for the Application Insights resource
+DESCRIPTION
+  type        = string
+  default     = null
+  ephemeral   = true
+}
+
+variable "connection_key_version" {
+  description = <<DESCRIPTION
+Version tracker for connection_key. Must be set when connection_key is provided.
+DESCRIPTION
+  type        = number
+  default     = null
+  validation {
+    condition     = var.connection_key == null || var.connection_key_version != null
+    error_message = "When connection_key is set, connection_key_version must also be set."
+  }
+}
+
+variable "connection_string_version" {
+  description = <<DESCRIPTION
+Version tracker for connection_string. Must be set when connection_string is provided.
+DESCRIPTION
+  type        = number
+  default     = null
+  validation {
+    condition     = var.connection_string == null || var.connection_string_version != null
+    error_message = "When connection_string is set, connection_string_version must also be set."
+  }
 }
