@@ -8,11 +8,7 @@ resource "azapi_resource" "this" {
   delete_headers = var.enable_telemetry && var.avm_azapi_header != "" ? { "User-Agent" : var.avm_azapi_header } : null
   read_headers   = var.enable_telemetry && var.avm_azapi_header != "" ? { "User-Agent" : var.avm_azapi_header } : null
   response_export_values = [
-    "apiVersion",
-    "properties.deploymentError",
-    "properties.source",
-    "systemData",
-    "type"
+    "properties.source"
   ]
   schema_validation_enabled = false
   sensitive_body = {

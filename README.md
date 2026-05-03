@@ -380,7 +380,6 @@ Type:
 
 ```hcl
 map(object({
-    name                                   = optional(string, null)
     role_definition_id_or_name             = string
     principal_id                           = string
     description                            = optional(string, null)
@@ -426,10 +425,6 @@ Description: Client ID (GUID) for the agent identity
 
 Description: Indicates whether the agent identity is enabled
 
-### <a name="output_api_version"></a> [api\_version](#output\_api\_version)
-
-Description: The resource api version
-
 ### <a name="output_identity_principal_id"></a> [identity\_principal\_id](#output\_identity\_principal\_id)
 
 Description: The service principal ID of the system assigned identity.
@@ -449,18 +444,6 @@ Description: The full SRE Agent resource object.
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The ID of the created resource.
-
-### <a name="output_running_state"></a> [running\_state](#output\_running\_state)
-
-Description: The running state of the Agent
-
-### <a name="output_system_data"></a> [system\_data](#output\_system\_data)
-
-Description: Azure Resource Manager metadata containing createdBy and modifiedBy information.
-
-### <a name="output_type"></a> [type](#output\_type)
-
-Description: The resource type
 
 ## Modules
 

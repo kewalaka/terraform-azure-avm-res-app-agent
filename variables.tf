@@ -279,7 +279,6 @@ variable "role_assignment_definition_scope" {
 
 variable "role_assignments" {
   type = map(object({
-    name                                   = optional(string, null)
     role_definition_id_or_name             = string
     principal_id                           = string
     description                            = optional(string, null)

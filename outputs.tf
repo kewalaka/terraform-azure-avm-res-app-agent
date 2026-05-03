@@ -13,11 +13,6 @@ output "agent_identity_enabled" {
   value       = try(azapi_resource.this.output.properties.agentIdentity.enabled, null)
 }
 
-output "api_version" {
-  description = "The resource api version"
-  value       = try(azapi_resource.this.output.apiVersion, null)
-}
-
 output "identity_principal_id" {
   description = "The service principal ID of the system assigned identity."
   value       = try(azapi_resource.this.output.identity.principalId, null)
@@ -41,19 +36,4 @@ output "resource" {
 output "resource_id" {
   description = "The ID of the created resource."
   value       = azapi_resource.this.id
-}
-
-output "running_state" {
-  description = "The running state of the Agent"
-  value       = try(azapi_resource.this.output.properties.runningState, null)
-}
-
-output "system_data" {
-  description = "Azure Resource Manager metadata containing createdBy and modifiedBy information."
-  value       = try(azapi_resource.this.output.systemData, {})
-}
-
-output "type" {
-  description = "The resource type"
-  value       = try(azapi_resource.this.output.type, null)
 }

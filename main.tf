@@ -8,15 +8,11 @@ resource "azapi_resource" "this" {
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   response_export_values = [
-    "apiVersion",
     "identity.principalId",
     "identity.tenantId",
     "properties.agentEndpoint",
     "properties.agentIdentity.clientId",
-    "properties.agentIdentity.enabled",
-    "properties.runningState",
-    "systemData",
-    "type"
+    "properties.agentIdentity.enabled"
   ]
   schema_validation_enabled = false
   sensitive_body = {

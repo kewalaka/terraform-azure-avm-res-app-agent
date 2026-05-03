@@ -53,5 +53,4 @@ locals {
     }
     tags = var.tags == null ? null : { for k, value in var.tags : k => value }
   }
-  role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }
