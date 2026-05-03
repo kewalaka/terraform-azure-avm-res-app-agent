@@ -1,4 +1,16 @@
 variable "connectors" {
+  type = map(object({
+    data_connector_type = optional(string)
+    data_source         = optional(string)
+    data_source_version = optional(number)
+    enable_telemetry    = optional(bool)
+    endpoint            = optional(string)
+    extended_properties = optional(map(any))
+    identity            = optional(string)
+    location            = string
+    name                = string
+  }))
+  default     = {}
   description = <<DESCRIPTION
 Map of instances for the connectors submodule with the following attributes:
 
@@ -29,16 +41,4 @@ The name of the resource.
 **location**
 The location of the resource.
 DESCRIPTION
-  type = map(object({
-    data_connector_type = optional(string)
-    data_source         = optional(string)
-    data_source_version = optional(number)
-    enable_telemetry    = optional(bool)
-    endpoint            = optional(string)
-    extended_properties = optional(map(any))
-    identity            = optional(string)
-    location            = string
-    name                = string
-  }))
-  default = {}
 }

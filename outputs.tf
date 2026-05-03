@@ -1,16 +1,16 @@
-output "resource" {
-  description = "The full SRE Agent resource object."
-  value       = azapi_resource.this
+output "agent_endpoint" {
+  description = "The endpoint of the Agent"
+  value       = try(azapi_resource.this.output.properties.agentEndpoint, null)
 }
 
-output "resource_id" {
-  description = "The ID of the created resource."
-  value       = azapi_resource.this.id
+output "agent_identity_client_id" {
+  description = "Client ID (GUID) for the agent identity"
+  value       = try(azapi_resource.this.output.properties.agentIdentity.clientId, null)
 }
 
-output "name" {
-  description = "The name of the created resource."
-  value       = azapi_resource.this.name
+output "agent_identity_enabled" {
+  description = "Indicates whether the agent identity is enabled"
+  value       = try(azapi_resource.this.output.properties.agentIdentity.enabled, null)
 }
 
 output "api_version" {
@@ -28,19 +28,19 @@ output "identity_tenant_id" {
   value       = try(azapi_resource.this.output.identity.tenantId, null)
 }
 
-output "agent_endpoint" {
-  description = "The endpoint of the Agent"
-  value       = try(azapi_resource.this.output.properties.agentEndpoint, null)
+output "name" {
+  description = "The name of the created resource."
+  value       = azapi_resource.this.name
 }
 
-output "agent_identity_client_id" {
-  description = "Client ID (GUID) for the agent identity"
-  value       = try(azapi_resource.this.output.properties.agentIdentity.clientId, null)
+output "resource" {
+  description = "The full SRE Agent resource object."
+  value       = azapi_resource.this
 }
 
-output "agent_identity_enabled" {
-  description = "Indicates whether the agent identity is enabled"
-  value       = try(azapi_resource.this.output.properties.agentIdentity.enabled, null)
+output "resource_id" {
+  description = "The ID of the created resource."
+  value       = azapi_resource.this.id
 }
 
 output "running_state" {

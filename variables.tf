@@ -20,6 +20,104 @@ variable "resource_group_name" {
   description = "The resource group where the resources will be deployed."
 }
 
+# SRE Agent specific variables
+variable "action_configuration" {
+  type = object({
+    access_level = optional(any)
+    identity     = optional(string)
+    mode         = optional(any)
+  })
+  default     = null
+  description = <<DESCRIPTION
+Configuration for action
+
+- `access_level` - The access level of the action
+- `identity` - The identity used by the action
+- `mode` - The mode of the action
+
+DESCRIPTION
+}
+
+variable "agent_identity" {
+  type = object({
+    initial_sponsor_group_id = string
+  })
+  default     = null
+  description = <<DESCRIPTION
+Agent identity configuration for accessing resources
+
+- `initial_sponsor_group_id` - Initial sponsor group ID (required for agent identity)
+
+DESCRIPTION
+}
+
+variable "agent_space_id" {
+  type        = string
+  default     = null
+  description = <<DESCRIPTION
+The agent space ID referenced by the agent
+DESCRIPTION
+}
+
+variable "connection_key" {
+  type        = string
+  ephemeral   = true
+  default     = null
+  description = <<DESCRIPTION
+The key for the connection
+DESCRIPTION
+}
+
+variable "connection_key_version" {
+  type        = number
+  default     = null
+  description = <<DESCRIPTION
+Version tracker for connection_key. Must be set when connection_key is provided.
+DESCRIPTION
+
+  validation {
+    condition     = var.connection_key == null || var.connection_key_version != null
+    error_message = "When connection_key is set, connection_key_version must also be set."
+  }
+}
+
+variable "connection_string" {
+  type        = string
+  ephemeral   = true
+  default     = null
+  description = <<DESCRIPTION
+The connection string for the Application Insights resource
+DESCRIPTION
+}
+
+variable "connection_string_version" {
+  type        = number
+  default     = null
+  description = <<DESCRIPTION
+Version tracker for connection_string. Must be set when connection_string is provided.
+DESCRIPTION
+
+  validation {
+    condition     = var.connection_string == null || var.connection_string_version != null
+    error_message = "When connection_string is set, connection_string_version must also be set."
+  }
+}
+
+variable "default_model" {
+  type = object({
+    name     = optional(string)
+    provider = optional(string)
+  })
+  default     = null
+  description = <<DESCRIPTION
+Default AI model configuration for the agent
+
+- `name` - Model name (e.g., gpt-5, claude-opus-4-5, claude-sonnet-4-5)
+- `provider` - AI provider name (e.g., MicrosoftFoundry, Anthropic)
+
+DESCRIPTION
+}
+
 # required AVM interfaces
 variable "diagnostic_settings" {
   type = map(object({
@@ -77,6 +175,42 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "incident_management_configuration" {
+  type = object({
+    connection_key  = optional(string)
+    connection_name = optional(string)
+    connection_url  = optional(string)
+    obo_user        = optional(string)
+    type            = optional(string)
+  })
+  default     = null
+  description = <<DESCRIPTION
+Incident management configurations
+
+- `connection_key` - The key for the connection
+- `connection_name` - The name of the connection
+- `connection_url` - The URL of the connection
+- `obo_user` - The user for the connection
+- `type` - The type of incident management system
+
+DESCRIPTION
+}
+
+variable "knowledge_graph_configuration" {
+  type = object({
+    identity          = optional(string)
+    managed_resources = optional(list(string))
+  })
+  default     = null
+  description = <<DESCRIPTION
+Knowledge graph configuration for agent
+
+- `identity` - The identity used to access the knowledge graph
+- `managed_resources` - The list of resources managed by agent
+
+DESCRIPTION
+}
+
 variable "lock" {
   type = object({
     kind = string
@@ -94,6 +228,24 @@ DESCRIPTION
     condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
     error_message = "The lock level must be one of: 'None', 'CanNotDelete', or 'ReadOnly'."
   }
+}
+
+variable "log_configuration" {
+  type = object({
+    application_insights_configuration = optional(object({
+      app_id            = optional(string)
+      connection_string = optional(string)
+    }))
+  })
+  default     = null
+  description = <<DESCRIPTION
+Log configurations
+
+- `application_insights_configuration` - Application Insights Configuration
+  - `app_id` - The Application ID for the Application Insights resource
+  - `connection_string` - The connection string for the Application Insights resource
+
+DESCRIPTION
 }
 
 # tflint-ignore: terraform_unused_declarations
@@ -148,160 +300,10 @@ variable "tags" {
   description = "(Optional) Tags of the resource."
 }
 
-# SRE Agent specific variables
-variable "action_configuration" {
-  description = <<DESCRIPTION
-Configuration for action
-
-- `access_level` - The access level of the action
-- `identity` - The identity used by the action
-- `mode` - The mode of the action
-
-DESCRIPTION
-  type = object({
-    access_level = optional(any)
-    identity     = optional(string)
-    mode         = optional(any)
-  })
-  default = null
-}
-
-variable "agent_identity" {
-  description = <<DESCRIPTION
-Agent identity configuration for accessing resources
-
-- `initial_sponsor_group_id` - Initial sponsor group ID (required for agent identity)
-
-DESCRIPTION
-  type = object({
-    initial_sponsor_group_id = string
-  })
-  default = null
-}
-
-variable "agent_space_id" {
-  description = <<DESCRIPTION
-The agent space ID referenced by the agent
-DESCRIPTION
-  type        = string
-  default     = null
-}
-
-variable "default_model" {
-  description = <<DESCRIPTION
-Default AI model configuration for the agent
-
-- `name` - Model name (e.g., gpt-5, claude-opus-4-5, claude-sonnet-4-5)
-- `provider` - AI provider name (e.g., MicrosoftFoundry, Anthropic)
-
-DESCRIPTION
-  type = object({
-    name     = optional(string)
-    provider = optional(string)
-  })
-  default = null
-}
-
-variable "incident_management_configuration" {
-  description = <<DESCRIPTION
-Incident management configurations
-
-- `connection_key` - The key for the connection
-- `connection_name` - The name of the connection
-- `connection_url` - The URL of the connection
-- `obo_user` - The user for the connection
-- `type` - The type of incident management system
-
-DESCRIPTION
-  type = object({
-    connection_key  = optional(string)
-    connection_name = optional(string)
-    connection_url  = optional(string)
-    obo_user        = optional(string)
-    type            = optional(string)
-  })
-  default = null
-}
-
-variable "knowledge_graph_configuration" {
-  description = <<DESCRIPTION
-Knowledge graph configuration for agent
-
-- `identity` - The identity used to access the knowledge graph
-- `managed_resources` - The list of resources managed by agent
-
-DESCRIPTION
-  type = object({
-    identity          = optional(string)
-    managed_resources = optional(list(string))
-  })
-  default = null
-}
-
-variable "log_configuration" {
-  description = <<DESCRIPTION
-Log configurations
-
-- `application_insights_configuration` - Application Insights Configuration
-  - `app_id` - The Application ID for the Application Insights resource
-  - `connection_string` - The connection string for the Application Insights resource
-
-DESCRIPTION
-  type = object({
-    application_insights_configuration = optional(object({
-      app_id            = optional(string)
-      connection_string = optional(string)
-    }))
-  })
-  default = null
-}
-
 variable "upgrade_channel" {
+  type        = any
+  default     = null
   description = <<DESCRIPTION
 The upgrade channel of the agent
 DESCRIPTION
-  type        = any
-  default     = null
-}
-
-variable "connection_key" {
-  description = <<DESCRIPTION
-The key for the connection
-DESCRIPTION
-  type        = string
-  default     = null
-  ephemeral   = true
-}
-
-variable "connection_string" {
-  description = <<DESCRIPTION
-The connection string for the Application Insights resource
-DESCRIPTION
-  type        = string
-  default     = null
-  ephemeral   = true
-}
-
-variable "connection_key_version" {
-  description = <<DESCRIPTION
-Version tracker for connection_key. Must be set when connection_key is provided.
-DESCRIPTION
-  type        = number
-  default     = null
-  validation {
-    condition     = var.connection_key == null || var.connection_key_version != null
-    error_message = "When connection_key is set, connection_key_version must also be set."
-  }
-}
-
-variable "connection_string_version" {
-  description = <<DESCRIPTION
-Version tracker for connection_string. Must be set when connection_string is provided.
-DESCRIPTION
-  type        = number
-  default     = null
-  validation {
-    condition     = var.connection_string == null || var.connection_string_version != null
-    error_message = "When connection_string is set, connection_string_version must also be set."
-  }
 }

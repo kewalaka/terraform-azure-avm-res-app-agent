@@ -18,7 +18,7 @@ locals {
       }
     } : {}
   }
-  role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
+  parent_id = data.azurerm_resource_group.parent.id
   resource_body = {
     name = var.name
     properties = {
@@ -54,5 +54,5 @@ locals {
     }
     tags = var.tags == null ? null : { for k, value in var.tags : k => value }
   }
-  parent_id = data.azurerm_resource_group.parent.id
+  role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }
