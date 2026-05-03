@@ -1,3 +1,3 @@
 # Default example
 
-This deploys the module in its simplest form.
+This example deploys the SRE Agent module with default settings and no optional configuration.

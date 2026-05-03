@@ -1,10 +1,17 @@
+# This is the default example for the SRE Agent module.
+# It deploys the module with no optional configuration to demonstrate the minimal required inputs.
+
 terraform {
-  required_version = "~> 1.5"
+  required_version = "~> 1.12"
 
   required_providers {
+    azapi = {
+      source  = "azure/azapi"
+      version = "~> 2.7"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.21"
+      version = "~> 4.0"
     }
     modtm = {
       source  = "azure/modtm"
@@ -21,6 +28,7 @@ provider "azurerm" {
   features {}
 }
 
+provider "azapi" {}
 
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
@@ -49,16 +57,11 @@ resource "azurerm_resource_group" "this" {
 }
 
 # This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
 module "test" {
   source = "../../"
 
-  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
-  # ...
+  name                = module.naming.resource_group.name_unique
   location            = azurerm_resource_group.this.location
-  name                = "TODO" # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry # see variables.tf
+  enable_telemetry    = var.enable_telemetry
 }
