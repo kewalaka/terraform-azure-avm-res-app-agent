@@ -3,12 +3,11 @@ data "azurerm_resource_group" "parent" {
 }
 
 resource "azapi_resource" "this" {
-  location                  = var.location
-  name                      = var.name
-  parent_id                 = local.parent_id
-  type                      = "Microsoft.App/agents@2026-01-01"
-  schema_validation_enabled = false
-  body                      = local.resource_body
+  location       = var.location
+  name           = var.name
+  parent_id      = local.parent_id
+  type           = "Microsoft.App/agents@2026-01-01"
+  body           = local.resource_body
   create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
   read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
@@ -23,6 +22,7 @@ resource "azapi_resource" "this" {
     "systemData",
     "type"
   ]
+  schema_validation_enabled = false
   sensitive_body = {
     properties = {
       incidentManagementConfiguration = var.incident_management_configuration == null ? null : {

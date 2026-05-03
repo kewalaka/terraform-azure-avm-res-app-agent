@@ -1,9 +1,8 @@
 resource "azapi_resource" "this" {
-  name                      = var.name
-  parent_id                 = var.parent_id
-  type                      = "Microsoft.App/agents/connectors@2026-01-01"
-  schema_validation_enabled = false
-  body                      = local.resource_body
+  name      = var.name
+  parent_id = var.parent_id
+  type      = "Microsoft.App/agents/connectors@2026-01-01"
+  body      = local.resource_body
   response_export_values = [
     "apiVersion",
     "properties.deploymentError",
@@ -11,6 +10,7 @@ resource "azapi_resource" "this" {
     "systemData",
     "type"
   ]
+  schema_validation_enabled = false
   sensitive_body = {
     properties = {
       dataSource = var.data_source
