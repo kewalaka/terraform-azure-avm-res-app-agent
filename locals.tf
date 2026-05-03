@@ -18,7 +18,6 @@ locals {
       }
     } : {}
   }
-  parent_id = data.azurerm_resource_group.parent.id
   resource_body = {
     name = var.name
     properties = {

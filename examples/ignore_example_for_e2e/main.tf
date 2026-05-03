@@ -1,10 +1,14 @@
 terraform {
-  required_version = "~> 1.5"
+  required_version = "~> 1.12"
 
   required_providers {
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 2.7"
+    }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.21"
+      version = "~> 4.0"
     }
     modtm = {
       source  = "azure/modtm"
@@ -21,12 +25,19 @@ provider "azurerm" {
   features {}
 }
 
+provider "azapi" {}
+
+data "modtm_module_source" "example" {
+  module_path = path.module
+}
+
+
 
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
-  version = "~> 0.1"
+  version = "0.12.0"
 }
 
 # This allows us to randomize the region for the resource group.
@@ -39,7 +50,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
+  version = "0.4.3"
 }
 
 # This is required for resource modules
@@ -57,8 +68,8 @@ module "test" {
 
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  location            = azurerm_resource_group.this.location
-  name                = "TODO" # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry # see variables.tf
+  location         = azurerm_resource_group.this.location
+  name             = "TODO" # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry # see variables.tf
 }

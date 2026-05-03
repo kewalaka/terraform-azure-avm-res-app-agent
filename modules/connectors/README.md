@@ -46,6 +46,16 @@ Type: `string`
 
 The following input variables are optional (have default values):
 
+### <a name="input_avm_azapi_header"></a> [avm\_azapi\_header](#input\_avm\_azapi\_header)
+
+Description: AVM telemetry header value to use as the `User-Agent` for AzAPI requests.
+
+This should be passed from the root module's `local.avm_azapi_header`.
+
+Type: `string`
+
+Default: `""`
+
 ### <a name="input_data_connector_type"></a> [data\_connector\_type](#input\_data\_connector\_type)
 
 Description: The type of the data connector

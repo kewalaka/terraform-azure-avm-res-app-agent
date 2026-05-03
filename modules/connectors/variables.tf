@@ -3,6 +3,7 @@ variable "location" {
   description = <<DESCRIPTION
 The location of the resource.
 DESCRIPTION
+  nullable    = false
 }
 
 variable "name" {
@@ -17,6 +18,17 @@ variable "parent_id" {
   description = <<DESCRIPTION
 The parent resource ID for this resource (the SRE Agent resource ID).
 DESCRIPTION
+}
+
+variable "avm_azapi_header" {
+  type        = string
+  default     = ""
+  description = <<DESCRIPTION
+AVM telemetry header value to use as the `User-Agent` for AzAPI requests.
+
+This should be passed from the root module's `local.avm_azapi_header`.
+DESCRIPTION
+  nullable    = false
 }
 
 variable "data_connector_type" {

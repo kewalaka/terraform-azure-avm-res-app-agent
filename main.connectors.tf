@@ -5,6 +5,7 @@ module "connectors" {
   location            = each.value.location
   name                = each.value.name
   parent_id           = azapi_resource.this.id
+  avm_azapi_header    = local.avm_azapi_header
   data_connector_type = each.value.data_connector_type
   data_source         = each.value.data_source
   data_source_version = each.value.data_source_version

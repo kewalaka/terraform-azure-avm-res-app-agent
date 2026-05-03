@@ -14,10 +14,10 @@ variable "name" {
   }
 }
 
-# This is required for most resource modules
-variable "resource_group_name" {
+variable "parent_id" {
   type        = string
-  description = "The resource group where the resources will be deployed."
+  description = "The parent resource ID. For resource-group-scoped resources, pass the resource group ID from the caller (e.g., azurerm_resource_group.this.id)."
+  nullable    = false
 }
 
 # SRE Agent specific variables
@@ -264,8 +264,22 @@ DESCRIPTION
   nullable    = false
 }
 
+variable "role_assignment_definition_lookup_enabled" {
+  type        = bool
+  default     = true
+  description = "Whether to look up role definitions when creating role assignments (allows passing role definition names, not just IDs)."
+  nullable    = false
+}
+
+variable "role_assignment_definition_scope" {
+  type        = string
+  default     = null
+  description = "Scope to use for role-definition lookup when role assignments are configured. If unset, defaults to `parent_id`."
+}
+
 variable "role_assignments" {
   type = map(object({
+    name                                   = optional(string, null)
     role_definition_id_or_name             = string
     principal_id                           = string
     description                            = optional(string, null)

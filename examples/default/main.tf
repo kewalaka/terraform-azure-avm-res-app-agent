@@ -6,7 +6,7 @@ terraform {
 
   required_providers {
     azapi = {
-      source  = "azure/azapi"
+      source  = "Azure/azapi"
       version = "~> 2.7"
     }
     azurerm = {
@@ -30,11 +30,16 @@ provider "azurerm" {
 
 provider "azapi" {}
 
+data "modtm_module_source" "example" {
+  module_path = path.module
+}
+
+
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/avm-utl-regions/azurerm"
-  version = "~> 0.1"
+  version = "0.12.0"
 }
 
 # This allows us to randomize the region for the resource group.
@@ -47,7 +52,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.3"
+  version = "0.4.3"
 }
 
 # This is required for resource modules
@@ -60,8 +65,8 @@ resource "azurerm_resource_group" "this" {
 module "test" {
   source = "../../"
 
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.resource_group.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = var.enable_telemetry
+  location         = azurerm_resource_group.this.location
+  name             = module.naming.resource_group.name_unique
+  parent_id        = azurerm_resource_group.this.id
+  enable_telemetry = var.enable_telemetry
 }
