@@ -1,30 +1,80 @@
-# TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
-resource "azurerm_resource_group" "TODO" {
-  location = var.location
-  name     = var.name # calling code must supply the name
-  tags     = var.tags
+resource "azapi_resource" "this" {
+  location       = var.location
+  name           = var.name
+  parent_id      = var.parent_id
+  type           = "Microsoft.App/agents@2026-01-01"
+  body           = local.resource_body
+  create_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  delete_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  read_headers   = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+  response_export_values = [
+    "identity.principalId",
+    "identity.tenantId",
+    "properties.agentEndpoint",
+    "properties.agentIdentity.clientId",
+    "properties.agentIdentity.enabled"
+  ]
+  schema_validation_enabled = false
+  sensitive_body = {
+    properties = {
+      incidentManagementConfiguration = var.incident_management_configuration == null ? null : {
+        connectionKey = var.connection_key
+      }
+      logConfiguration = var.log_configuration == null ? null : {
+        applicationInsightsConfiguration = {
+          connectionString = var.connection_string
+        }
+      }
+    }
+  }
+  sensitive_body_version = {
+    "properties.incidentManagementConfiguration.connectionKey"                      = var.connection_key_version
+    "properties.logConfiguration.applicationInsightsConfiguration.connectionString" = var.connection_string_version
+  }
+  tags           = var.tags
+  update_headers = var.enable_telemetry ? { "User-Agent" : local.avm_azapi_header } : null
+
+  dynamic "identity" {
+    for_each = local.managed_identities.system_assigned_user_assigned
+
+    content {
+      type         = identity.value.type
+      identity_ids = identity.value.user_assigned_resource_ids
+    }
+  }
 }
 
-# required AVM resources interfaces
-resource "azurerm_management_lock" "this" {
-  count = var.lock != null ? 1 : 0
+resource "azurerm_monitor_diagnostic_setting" "this" {
+  for_each = var.diagnostic_settings
 
-  lock_level = var.lock.kind
-  name       = coalesce(var.lock.name, "lock-${var.lock.kind}")
-  scope      = azurerm_resource_group.TODO.id # TODO: Replace with your azurerm resource name
-  notes      = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
-}
+  name                           = each.value.name != null ? each.value.name : "diag-${var.name}"
+  target_resource_id             = azapi_resource.this.id
+  eventhub_authorization_rule_id = each.value.event_hub_authorization_rule_resource_id
+  eventhub_name                  = each.value.event_hub_name
+  log_analytics_destination_type = each.value.log_analytics_destination_type
+  log_analytics_workspace_id     = each.value.workspace_resource_id
+  partner_solution_id            = each.value.marketplace_partner_resource_id
+  storage_account_id             = each.value.storage_account_resource_id
 
-resource "azurerm_role_assignment" "this" {
-  for_each = var.role_assignments
+  dynamic "enabled_log" {
+    for_each = each.value.log_categories
 
-  principal_id                           = each.value.principal_id
-  scope                                  = azurerm_resource_group.TODO.id # TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
-  condition                              = each.value.condition
-  condition_version                      = each.value.condition_version
-  delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
-  principal_type                         = each.value.principal_type
-  role_definition_id                     = strcontains(lower(each.value.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? each.value.role_definition_id_or_name : null
-  role_definition_name                   = strcontains(lower(each.value.role_definition_id_or_name), lower(local.role_definition_resource_substring)) ? null : each.value.role_definition_id_or_name
-  skip_service_principal_aad_check       = each.value.skip_service_principal_aad_check
+    content {
+      category = enabled_log.value
+    }
+  }
+  dynamic "enabled_log" {
+    for_each = each.value.log_groups
+
+    content {
+      category_group = enabled_log.value
+    }
+  }
+  dynamic "metric" {
+    for_each = each.value.metric_categories
+
+    content {
+      category = metric.value
+    }
+  }
 }

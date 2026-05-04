@@ -1,3 +1,3 @@
-# terraform-azurerm-avm-template
+# terraform-azurerm-avm-res-app-agent
 
-This is a template repo for Terraform Azure Verified Modules.
+This module deploys an Azure SRE Agent (`Microsoft.App/agents`), providing an AI-powered operational agent with configurable connectors, model settings, identity, and monitoring.

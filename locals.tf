@@ -1,4 +1,3 @@
-# TODO: insert locals here.
 locals {
   managed_identities = {
     system_assigned_user_assigned = (var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0) ? {
@@ -19,16 +18,39 @@ locals {
       }
     } : {}
   }
-  # Private endpoint application security group associations.
-  # We merge the nested maps from private endpoints and application security group associations into a single map.
-  private_endpoint_application_security_group_associations = { for assoc in flatten([
-    for pe_k, pe_v in var.private_endpoints : [
-      for asg_k, asg_v in pe_v.application_security_group_associations : {
-        asg_key         = asg_k
-        pe_key          = pe_k
-        asg_resource_id = asg_v
+  resource_body = {
+    name = var.name
+    properties = {
+      actionConfiguration = var.action_configuration == null ? null : {
+        accessLevel = var.action_configuration.access_level
+        identity    = var.action_configuration.identity
+        mode        = var.action_configuration.mode
       }
-    ]
-  ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
-  role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
+      agentIdentity = var.agent_identity == null ? null : {
+        initialSponsorGroupId = var.agent_identity.initial_sponsor_group_id
+      }
+      agentSpaceId = var.agent_space_id
+      defaultModel = var.default_model == null ? null : {
+        name     = var.default_model.name
+        provider = var.default_model.provider
+      }
+      incidentManagementConfiguration = var.incident_management_configuration == null ? null : {
+        connectionName = var.incident_management_configuration.connection_name
+        connectionUrl  = var.incident_management_configuration.connection_url
+        oboUser        = var.incident_management_configuration.obo_user
+        type           = var.incident_management_configuration.type
+      }
+      knowledgeGraphConfiguration = var.knowledge_graph_configuration == null ? null : {
+        identity         = var.knowledge_graph_configuration.identity
+        managedResources = var.knowledge_graph_configuration.managed_resources == null ? null : [for item in var.knowledge_graph_configuration.managed_resources : item]
+      }
+      logConfiguration = var.log_configuration == null ? null : {
+        applicationInsightsConfiguration = var.log_configuration.application_insights_configuration == null ? null : {
+          appId = var.log_configuration.application_insights_configuration.app_id
+        }
+      }
+      upgradeChannel = var.upgrade_channel
+    }
+    tags = var.tags == null ? null : { for k, value in var.tags : k => value }
+  }
 }
